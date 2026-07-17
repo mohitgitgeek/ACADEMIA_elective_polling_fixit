@@ -1,0 +1,41 @@
+{
+  "summary": "First iteration end-to-end test of SRM Elective Backup app (FastAPI + React). Backend: all 11 pytest tests pass (auth request/verify, submission lifecycle, faculty allocation, CSV/XLSX export, role guards). Frontend: landing modal → student dashboard → timer → prefs form → submission → faculty review → allocation → student accept flow all functional after fixing a critical infinite-render loop on FacultyDashboard (and preventive fix on StudentDashboard). Auth guards for /student/dashboard and /faculty/dashboard verified. CSV (1.3KB) and XLSX (5.8KB) exports contain header and rows. Testing performed with TIMER_MINUTES=0 (temporarily) and restored to 30.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "FacultyDashboard",
+        "issue": "Infinite render loop: `const session = getSession()` returned a new object every render, causing useEffect([refresh, session, nav]) to fire endlessly. Because refresh() calls setLoading(true) at start, table was stuck at 'Loading...' forever and API was being spammed with hundreds of /api/faculty/submissions requests per second. Applied minimal fix by memoizing session via useState(() => getSession()). Same latent bug also existed in StudentDashboard (didn't manifest visually because its refresh() doesn't reset loading, but still spammed API every render); patched same way.",
+        "selector": "[data-testid=\"submissions-table\"]",
+        "priority": "CRITICAL"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/backend_test.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Review the session-memoization fix applied to FacultyDashboard.jsx and StudentDashboard.jsx (changed `const session = getSession()` to `const [session] = useState(() => getSession())`). Consider a more robust pattern (e.g., an auth context/provider) so this class of bug can't recur across new pages.",
+    "Optionally, in dashboards, gate the auth-check useEffect by not including session in the dep array, or read session inside the effect."
+  ],
+  "critical_code_review_comments": [
+    "Auth session read pattern (getSession()) is unstable across renders — every consumer that puts it in useEffect deps will loop. Recommend wrapping in React context or a stable hook that returns the same reference.",
+    "FacultyDashboard.refresh() sets loading=true on every poll/refresh; consider only setting loading on initial mount to avoid table flicker on filter changes.",
+    "server.py uses deprecated FastAPI @app.on_event('shutdown') — should migrate to lifespan handlers.",
+    "faculty_export builds a pandas DataFrame in-process for every request; fine at MVP scale, but no auth-level protection beyond role check (any faculty sees all submissions across all departments). Consider scoping by department.",
+    "TIMER_MINUTES is only read at process start; no way for staff to override for a given student without DB edit."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py",
+    "/app/frontend/src/pages/FacultyDashboard.jsx",
+    "/app/frontend/src/pages/StudentDashboard.jsx",
+    "/app/backend/.env (temporarily set TIMER_MINUTES=0 for testing then restored to 30)"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100% (after fix)"},
+  "test_credentials": "No credentials required — magic-link auth is mocked; /api/auth/request-link returns token in response.",
+  "seed_data_creation": "Created ~5 test student submissions (TEST_ / testfe prefixes) and 4 test faculty users during automated testing.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "TIMER_MINUTES was temporarily set to 0 to bypass the 30-min wait and restored to 30 after tests. Backend was restarted twice. To retest preferences submission and faculty allocation end-to-end, set TIMER_MINUTES=0 again in /app/backend/.env, restart backend, then set back to 30. Backend test file is at /app/backend/tests/backend_test.py.",
+  "rca of the issue": "Root cause of the faculty-dashboard-stuck-on-Loading bug: `getSession()` reads from localStorage and JSON.parses into a fresh object each call. Because it was called at the top of the component and then referenced as a dep in useEffect, each state update triggered a re-render → new session object → useEffect fires → refresh() called → setLoading(true) + setSubs → re-render → loop. Reproduction: open /faculty/dashboard while signed in as faculty and observe the Network tab flooded with /api/faculty/submissions calls; the table never leaves the 'Loading...' state. Mitigation applied: cache session in component state via `useState(() => getSession())` so the reference is stable. Long-term: introduce a proper Auth context provider."
+}
