@@ -1,0 +1,101 @@
+{
+  "theme": "light",
+  "typography": {
+    "headings": {
+      "family": "Cabinet Grotesk",
+      "weights": ["400", "700", "900"],
+      "usage_rules": "Use tracking-tight for all headings > 32px. Use font-black for major section headers, font-light for elegant numerical data. Never use Inter or standard sans for headings."
+    },
+    "body": {
+      "family": "IBM Plex Sans",
+      "weights": ["400", "500", "600"],
+      "usage_rules": "Strictly use for readable form elements, table data, and standard paragraph text. Clean, geometric, authoritative."
+    },
+    "mono": {
+      "family": "JetBrains Mono",
+      "usage_rules": "Use for the 30-minute timer, registration numbers, and code-like data."
+    }
+  },
+  "colors": {
+    "archetype": "SWISS & HIGH-CONTRAST (Academic Variant)",
+    "background": {
+      "page": "#F9F9F8",
+      "surface": "#FFFFFF",
+      "surface_hover": "#F0F0EE",
+      "glass": "rgba(255, 255, 255, 0.85)"
+    },
+    "text": {
+      "primary": "#111110",
+      "secondary": "#63635E",
+      "disabled": "#A1A19D"
+    },
+    "brand": {
+      "primary": "#111110",
+      "primary_foreground": "#FFFFFF",
+      "accent": "#0055FF",
+      "timer_alert": "#E54D2E",
+      "success": "#30A46C"
+    },
+    "border": {
+      "default": "#E6E6E4",
+      "focus": "#111110"
+    },
+    "rules": "No pure black or pure white except for primary action buttons. Use tinted greys. Do NOT use gradients. Rely on high contrast boundaries."
+  },
+  "layouts": {
+    "strategy": "High Density Grid (For Dashboards) & Centered Narrow Column (For Forms)",
+    "container_padding": "p-8 md:p-12 lg:p-16",
+    "dashboard_grid": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+    "form_layout": "max-w-xl mx-auto flex flex-col gap-8",
+    "surface_styles": {
+      "cards": "bg-white border border-border/40 rounded-sm shadow-sm",
+      "header": "backdrop-blur-xl bg-white/85 border-b border-border/40 sticky top-0 z-50",
+      "footer": "py-20 border-t border-border/40 bg-white"
+    }
+  },
+  "visual_enhancers": {
+    "borders_and_radius": "radius-sm (2px) to radius-md (4px) maximum. Keep it sharp, academic, and structured.",
+    "shadows": "Minimal. Use shadow-sm for cards. Focus on 1px borders instead of heavy shadows for separation.",
+    "glassmorphism": "Used only on the sticky header (backdrop-blur-xl bg-white/85) with a delicate 1px bottom border. Do NOT use transparent backgrounds for dropdowns or modals."
+  },
+  "components": {
+    "buttons": "Sharp corners or 2px radius. High contrast (black bg, white text). Hover state MUST be clearly defined (e.g. hover:bg-black/80).",
+    "inputs": "Flat, 1px border. Focus ring must be stark black (focus:ring-black focus:border-black).",
+    "forms": "Multi-step form uses Framer Motion for smooth horizontal or fade-in transitions between steps.",
+    "tables": "Dense, clean. Use Shadcn Table. No zebra striping, just subtle bottom borders. Hover state on rows.",
+    "toasts": "Use Sonner component for all notifications. Place at bottom-right.",
+    "timer": "A distinctive visual element for the 30-min wait. Use JetBrains Mono, red accent color when < 5 mins, soft pulse animation."
+  },
+  "motion": {
+    "page_transitions": "Subtle fade-in for pages (framer-motion).",
+    "micro_interactions": "Buttons scale down slightly on active (active:scale-95). Subtle translate-y on hover for dashboard cards.",
+    "form_steps": "Slide left-to-right with opacity fade when advancing preference forms."
+  },
+  "accessibility": {
+    "contrast": "Strict adherence to APCA. All text > 4.5:1.",
+    "focus": "All interactive elements must have clear focus rings.",
+    "data_testid": "MANDATORY. Add descriptive data-testid to every button, form input, tab, and row."
+  },
+  "media": {
+    "images": [
+      {
+        "category": "landing_hero_background",
+        "url": "https://images.unsplash.com/photo-1520529890308-f503006340b4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGFyY2hpdGVjdHVyZSUyMGNhbG0lMjBtaW5pbWFsfGVufDB8fHx8MTc4MzY4NjQ0N3ww&ixlib=rb-4.1.0&q=85",
+        "description": "Minimal abstract white concrete stairs. Use as a very subtle, low-opacity background or hero image on the landing page to evoke calm structure amidst chaos."
+      }
+    ],
+    "icons": "lucide-react for all standard icons."
+  },
+  "instructions_to_main_agent": [
+    "Install required fonts (Cabinet Grotesk, IBM Plex Sans, JetBrains Mono) via Google Fonts or standard imports.",
+    "Build the Landing Page with a clear, empathetic message and a large primary CTA for 'I couldn't poll'.",
+    "Implement the 30-minute waiting logic in the student flow. Show a visually distinct timer. After 30 mins, unlock the email magic-link input.",
+    "Create the multi-step form: Step 1 (Details), Step 2 (Elective Category), Step 3 (Preferences 1, 2, 3 for N electives).",
+    "Build a clean tabular faculty dashboard to review submissions, assign courses, and trigger allocation emails.",
+    "Ensure all Shadcn components (forms, tables, dialogs) are styled sharply to match the Swiss Brutalist/Academic theme.",
+    "Do NOT center align text globally. Left-align for reading efficiency.",
+    "Do NOT use gradients. Rely on typography scale and borders for hierarchy.",
+    "Add 'data-testid' to all critical elements for testing."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": "Avoid generic outputs. Apply generous spacing (p-6, p-8). Create depth through layered design elements with z-index hierarchy. Ensure focus states are accessible. NEVER use AI assistant emoji characters for icons. Use Sonner for toasts."
+}
