@@ -20,6 +20,8 @@ from typing import Optional, List, Literal, Dict, Any
 from datetime import datetime, timezone, timedelta
 import pandas as pd
 
+from srm_academia import import_student, AcademiaError
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
@@ -83,6 +85,11 @@ class RequestLinkBody(BaseModel):
 
 class VerifyBody(BaseModel):
     token: str
+
+
+class AcademiaImportBody(BaseModel):
+    username: str  # SRM email or reg number
+    password: str
 
 
 class UserPublic(BaseModel):
@@ -206,6 +213,24 @@ async def verify(body: VerifyBody):
 @api.get("/auth/me")
 async def me(user=Depends(current_user)):
     return {"user": user}
+
+
+@api.post("/academia/import")
+async def academia_import(body: AcademiaImportBody):
+    """Best-effort import of student details from SRM Academia (Zoho).
+
+    Credentials are used in-memory only; never logged or persisted.
+    Returns 502 if the scraper fails (Academia's flow has likely changed).
+    """
+    try:
+        details = import_student(body.username, body.password)
+    except AcademiaError as e:
+        # 400 (not 502) so Cloudflare / ingress doesn't replace our body with their bad-gateway page.
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:  # unexpected
+        log.exception("Academia import crashed")
+        raise HTTPException(status_code=400, detail=f"Academia import failed: {e}")
+    return {"ok": True, "details": details}
 
 
 # ---------------------------------------------------------------------------

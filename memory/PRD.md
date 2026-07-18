@@ -43,6 +43,20 @@ UI must be simple and to-the-point.
 - ✅ Mocked email logs to backend logs as `[MOCK EMAIL]`
 - ✅ Backend tests (100%) + frontend E2E (100%) via testing agent
 
+## Implemented (2026-02-18) — SRM Academia (Zoho) integration
+- ✅ Ported the unofficial `iamyogik/SRM-Academia-API-Python` scraper to modern Python 3, pointed at the current domain `academia.srmist.edu.in`, and trimmed to just what we need (personal details).
+- ✅ New backend endpoint `POST /api/academia/import` — takes `{username, password}`, returns `{name, reg_no, department, program, semester, batch, mobile}` on success.
+- ✅ New file `/app/backend/srm_academia.py` with `sign_in`, `fetch_personal_details`, `import_student`, `AcademiaError`.
+- ✅ Env var `ACADEMIA_BASE` (default `https://academia.srmist.edu.in`).
+- ✅ New landing-modal panel "Import from SRM Academia" (data-testid: `import-academia-toggle`, `-panel`, `-email`, `-password`, `-submit`, `-cancel`) that pre-fills name / reg-no / department on success, and toasts a clean error on failure with the user still able to fill manually.
+- ✅ Confirmed reachable: `POST /accounts/signin.ac` on current Academia domain responds with structured errors (verified with fake credentials → clean toast "Invalid Email Address or Password").
+- ⚠️ **Password never persisted** — used only in-memory during the single request. Not logged, not written to Mongo.
+- ⚠️ **Best-effort only** — the personal-details scrape tries multiple view names (`My_Time_Table_2022_23…2025_26_{ODD,EVEN}`). If SRM's view names have all changed again, the login succeeds but details scrape returns an `AcademiaError`, and the user is prompted to fill manually.
+- ❌ **Elective polling itself is not exposed by any known API** — no unofficial wrapper implements the elective-polling page. This app remains a standalone backup for that specific flow.
+
+## New endpoints added
+- `POST /api/academia/import` — body `{ username, password }` → 200 `{ ok, details: {...} }` or 400 `{ detail: "..." }`
+
 ## Prioritized backlog
 ### P0 (before real rollout)
 - Wire real Resend API key + verified sending domain (email flow currently mocked)

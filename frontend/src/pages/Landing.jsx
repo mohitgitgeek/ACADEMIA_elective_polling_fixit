@@ -8,18 +8,52 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Header from "@/components/Header";
 import { toast } from "sonner";
-import { ArrowRight, Clock, AlertTriangle, ShieldCheck, MailCheck } from "lucide-react";
+import { ArrowRight, Clock, AlertTriangle, ShieldCheck, MailCheck, Zap, Lock } from "lucide-react";
 
 export default function Landing() {
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [importPwd, setImportPwd] = useState("");
   const [form, setForm] = useState({
     email: "",
     name: "",
     reg_no: "",
     department: "",
   });
+
+  const importFromAcademia = async () => {
+    if (!form.email || !importPwd) {
+      toast.error("Enter your SRM email and Academia password");
+      return;
+    }
+    setImporting(true);
+    try {
+      const r = await api.post("/academia/import", {
+        username: form.email,
+        password: importPwd,
+      });
+      const d = r.data.details || {};
+      setForm((f) => ({
+        ...f,
+        name: d.name || f.name,
+        reg_no: d.reg_no || f.reg_no,
+        department: d.department || f.department,
+      }));
+      setImportPwd("");
+      setShowImport(false);
+      toast.success("Imported from Academia. Please review.");
+    } catch (e) {
+      toast.error(
+        e?.response?.data?.detail ||
+          "Could not import from Academia. Fill manually."
+      );
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -198,6 +232,76 @@ export default function Landing() {
                 Your details
               </h3>
             </div>
+
+            {/* Import from Academia (best-effort, opt-in) */}
+            <div className="px-8 pt-6">
+              {!showImport ? (
+                <button
+                  type="button"
+                  data-testid="import-academia-toggle"
+                  onClick={() => setShowImport(true)}
+                  className="w-full flex items-center justify-between border border-dashed border-[var(--border-default)] p-4 hover:bg-[var(--surface-hover)] transition text-left"
+                >
+                  <span className="flex items-center gap-3">
+                    <Zap className="h-4 w-4 text-[var(--accent)]" />
+                    <span>
+                      <span className="block text-sm font-medium">Import from SRM Academia</span>
+                      <span className="block text-xs text-[var(--text-secondary)] mt-0.5">
+                        Auto-fill name, reg. no. & department. Password never stored.
+                      </span>
+                    </span>
+                  </span>
+                  <ArrowRight className="h-4 w-4 text-[var(--text-secondary)]" />
+                </button>
+              ) : (
+                <div className="border border-[var(--border-default)] p-4 bg-[var(--surface-hover)]" data-testid="import-academia-panel">
+                  <div className="flex items-center gap-2 text-[var(--text-secondary)] mb-3">
+                    <Lock className="h-3.5 w-3.5" />
+                    <span className="font-mono text-[10px] uppercase tracking-widest">
+                      In-memory only · never logged
+                    </span>
+                  </div>
+                  <Label className="text-xs uppercase tracking-widest text-[var(--text-secondary)]">Email (for Academia login)</Label>
+                  <Input
+                    data-testid="import-academia-email"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="you@srmist.edu.in"
+                    className="rounded-none border-[var(--border-default)] mt-2 h-11 focus-visible:ring-0 focus-visible:border-black bg-white"
+                  />
+                  <Label className="text-xs uppercase tracking-widest text-[var(--text-secondary)] mt-3 block">Academia password</Label>
+                  <Input
+                    data-testid="import-academia-password"
+                    type="password"
+                    value={importPwd}
+                    onChange={(e) => setImportPwd(e.target.value)}
+                    placeholder="••••••••"
+                    className="rounded-none border-[var(--border-default)] mt-2 h-11 focus-visible:ring-0 focus-visible:border-black bg-white"
+                  />
+                  <div className="flex items-center justify-between mt-4">
+                    <button
+                      type="button"
+                      onClick={() => { setShowImport(false); setImportPwd(""); }}
+                      className="text-xs text-[var(--text-secondary)] hover:text-black underline underline-offset-4"
+                      data-testid="import-academia-cancel"
+                    >
+                      Never mind
+                    </button>
+                    <Button
+                      type="button"
+                      onClick={importFromAcademia}
+                      disabled={importing}
+                      data-testid="import-academia-submit"
+                      className="rounded-none bg-[var(--accent)] hover:bg-[var(--accent)]/85 text-white h-10 px-4"
+                    >
+                      {importing ? "Importing…" : "Import"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <form onSubmit={submit} className="p-8 space-y-5">
               <div>
                 <Label htmlFor="name" className="text-xs uppercase tracking-widest text-[var(--text-secondary)]">Full name</Label>
